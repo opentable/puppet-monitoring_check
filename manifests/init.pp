@@ -132,6 +132,14 @@
 # A hash the determines if and when a check should be silenced for a peroid of time,
 # such as within working hours.
 #
+# [*subscribers*]
+# Array of Strings.  Which subscriptions must execute this check
+# Default: []
+#
+# [*standalone*]
+#   Boolean.  When true, scheduled by the client.  When false, listen for published check request
+#   Default: true
+#
 # This, by default allows you to set the $::override_sensu_checks_to fact
 # in /etc/facter/facts.d to stop checks on a single machine from alerting via the
 # normal mechanism. Setting this to false will stop this mechanism from applying
@@ -168,6 +176,8 @@ define monitoring_check (
   $can_override          = true,
   $tags                  = [],
   $subdue                = undef,
+  $standalone            = true,
+  $subscribers           = [],
 ) {
 
   include monitoring_check::params
@@ -190,9 +200,13 @@ define monitoring_check (
 
   validate_array($handlers)
   validate_hash($sensu_custom)
+
   if $subdue != undef {
     validate_hash($subdue)
   }
+
+  validate_bool($standalone)
+  validate_array($subscribers)
 
   $interval_s = human_time_to_seconds($check_every)
   validate_re($interval_s, '^\d+$')
@@ -276,5 +290,8 @@ define monitoring_check (
     })
     # quotes around $name are needed to ensure its value comes from monitoring_check
     create_resources('sensu::check', { "${name}" => $sensu_check_params })
+      standalone          => $standalone,
+      subscribers         => $subscribers,
+    }
   }
 }
