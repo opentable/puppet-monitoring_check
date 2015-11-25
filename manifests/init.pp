@@ -287,11 +287,10 @@ define monitoring_check (
       custom              => $custom,
       source              => $source,
       subdue              => $subdue,
+      standalone          => $standalone,
+      subscribers         => $subscribers,
     })
     # quotes around $name are needed to ensure its value comes from monitoring_check
     create_resources('sensu::check', { "${name}" => $sensu_check_params })
-      standalone          => $standalone,
-      subscribers         => $subscribers,
-    }
   }
 }
